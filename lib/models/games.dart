@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:gamesapp/models/enums/EGamesType.dart';
 
-class Games{
+class Game{
+  EGameType _gameType;
   String _name;
   String _image;
 
-  Games(this._name, this._image);
+  Game(this._gameType, this._name, this._image);
 
   String get image => _image;
 
@@ -16,6 +18,12 @@ class Games{
 
   set name(String value) {
     _name = value;
+  }
+
+  EGameType get gameType => _gameType;
+
+  set gameType(EGameType value) {
+    _gameType = value;
   }
 
 

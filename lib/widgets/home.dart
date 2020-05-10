@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:gamesapp/models/enums/EGamesType.dart';
 import 'package:gamesapp/models/games.dart';
+import 'package:gamesapp/widgets/gameConfiguration.dart';
 
 class HomePage extends StatefulWidget{
 
@@ -12,10 +13,10 @@ class HomePage extends StatefulWidget{
 
 class _HomePageState extends State<HomePage>{
 
-  List<Games> gameList = [
-    Games("Tic Tac Toe", "assets/tic-tac-toe.png"),
-    Games("Battleship", "assets/battleships.png"),
-    Games("Hanged", "assets/hanging-rope.png"),
+  List<Game> gameList = [
+    Game(EGameType.TIC_TAC_TOE,"Tic Tac Toe", "assets/tic-tac-toe.png"),
+    Game(EGameType.BATTLESHIP, "Battleship", "assets/battleships.png"),
+    Game(EGameType.HANGED, "Hanged", "assets/hanging-rope.png"),
   ];
 
   @override
@@ -33,17 +34,26 @@ class _HomePageState extends State<HomePage>{
             itemCount: gameList.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
             itemBuilder: (context, i){
-              return Card(
-                elevation: 10.0,
-                child: Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Image.asset(gameList[i].image, scale: 15.0,),
-                      textTitleGame(gameList[i].name),
-                    ],
+              return InkWell(
+                child: Card(
+                  elevation: 10.0,
+                  child: Container(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        Image.asset(gameList[i].image, scale: 15.0,),
+                        textTitleGame(gameList[i].name),
+                      ],
+                    ),
                   ),
                 ),
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (BuildContext buildContext){
+                      return GameConfiguration(gameList[i].gameType);
+                    }
+                  ));
+                },
               );
             }
         ),
