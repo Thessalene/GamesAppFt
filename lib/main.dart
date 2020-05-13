@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
+import 'package:list_french_words/list_french_words.dart';
 import 'package:gamesapp/widgets/home.dart';
 
 void main() {

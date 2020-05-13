@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:gamesapp/models/enums/EDifficultyType.dart';
 import 'package:gamesapp/models/enums/EGamesType.dart';
 import 'package:gamesapp/models/player.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'package:gamesapp/widgets/hanged.dart';
 import 'package:gamesapp/widgets/tictactoe.dart';
 
 class GameConfiguration extends StatefulWidget {
 
   final EGameType gameType;
+  int nbPlayer=0;
 
   GameConfiguration(this.gameType);
 
   @override
   _GameConfiguration createState() {
+    nbPlayer = EGameTypeHelper().getPlayerNbFromType(gameType);
     return _GameConfiguration();
   }
 
@@ -19,31 +23,32 @@ class GameConfiguration extends StatefulWidget {
 
 class _GameConfiguration extends State<GameConfiguration> {
 
-  List<Player> playerList = [
-    Player(1, "", Colors.blue, 0),
-    Player(1, "", Colors.red, 0)
-  ];
+  List<Player> playerList = [];
   int playerNumber;
+  EDifficultyType selectedDifficulty;
+
+  List<EDifficultyType> difficultyList = EDifficultyType.values;
 
   @override
   void initState() {
+    playerList = List<Player>.generate(widget.nbPlayer, (index) => Player(index, "", Colors.blue, 0),);
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Configuration"),),
+      resizeToAvoidBottomPadding: true,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            padding(),
             textStyle(EGameTypeHelper().getNameFromType(widget.gameType), 35.0, Colors.blue),
             Padding(padding: EdgeInsets.all(10.0),),
             textStyle("Veuillez configurer le jeu. Vous pouvez changer la couleur de votre joueur en cliquant son icone", 15.0, Colors.grey[700]),
-            padding(),
+            selectDifficulty(),
+            Padding(padding: EdgeInsets.all(10.0),),
             Expanded(
               child: ListView.builder(
                   itemCount: EGameTypeHelper().getPlayerNbFromType(widget.gameType),
@@ -82,10 +87,25 @@ class _GameConfiguration extends State<GameConfiguration> {
                   }
                 });
                 if(valid){
+                  switch(widget.gameType) {
+                    case EGameType.TIC_TAC_TOE:
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (BuildContext buildContext) {
+                            return TicTacToe(selectedDifficulty, playerList);
+                          }));
+
+                      break;
+                    case EGameType.BATTLESHIP:
+                      print("BATTLESHIP");
+                      break;
+                    case EGameType.HANGED:
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (BuildContext buildContext) {
+                            return Hanged(selectedDifficulty, playerList);
+                          }));
+                      break;
                   //TODO call widget in function of Game
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext buildContext){
-                    return TicTacToe(playerList);
-                  }));
+                  }
                 } else {
                   print("Erreur");
 
@@ -101,36 +121,36 @@ class _GameConfiguration extends State<GameConfiguration> {
   TextFormField playerRow(int index){
     return new TextFormField(
       key: Key("player$index"),
-          decoration: new InputDecoration(
-            labelText: "Player ${index+1}",
-            fillColor: Colors.white,
-            border: new OutlineInputBorder(
-              borderRadius: new BorderRadius.circular(25.0),
-              borderSide: new BorderSide(
-              ),
-            ),
-            //fillColor: Colors.green
+      decoration: new InputDecoration(
+        labelText: "Player ${index+1}",
+        fillColor: Colors.white,
+        border: new OutlineInputBorder(
+          borderRadius: new BorderRadius.circular(25.0),
+          borderSide: new BorderSide(
           ),
-          onChanged: (String str){
-            setState(() {
-              print("VAL PLAYER $index : $str");
-              playerList[index].playerName=str;
-            });
-          },
+        ),
+        //fillColor: Colors.green
+      ),
+      onChanged: (String str){
+        setState(() {
+          print("VAL PLAYER $index : $str");
+          playerList[index].playerName=str;
+        });
+      },
 
-          validator: (val) {
-            if (val.length == 0) {
-              return "Player name cannot be empty";
-            } else {
+      validator: (val) {
+        if (val.length == 0) {
+          return "Player name cannot be empty";
+        } else {
 
-              return null;
-            }
-          },
-          keyboardType: TextInputType.text,
-          style: new TextStyle(
-            fontFamily: "Poppins",
-          ),
-        );
+          return null;
+        }
+      },
+      keyboardType: TextInputType.text,
+      style: new TextStyle(
+        fontFamily: "Poppins",
+      ),
+    );
   }
 
   Padding padding() {
@@ -150,4 +170,29 @@ class _GameConfiguration extends State<GameConfiguration> {
     );
   }
 
+  DropdownButton selectDifficulty(){
+    return DropdownButton<EDifficultyType>(
+      hint:  Text("Selectionner la difficulté"),
+      value: selectedDifficulty,
+      onChanged: (EDifficultyType value) {
+        setState(() {
+          selectedDifficulty = value;
+        });
+      },
+      items: difficultyList.map((EDifficultyType difficulty) {
+        return  DropdownMenuItem<EDifficultyType>(
+          value: difficulty,
+          child: Row(
+            children: <Widget>[
+              SizedBox(width: 10,),
+              Text(
+                EDifficultyTypeHelper().getStringFromDifficultyType(difficulty),
+                style:  TextStyle(color: Colors.black),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
 }

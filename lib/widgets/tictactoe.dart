@@ -1,17 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:gamesapp/models/enums/EDifficultyType.dart';
 import 'package:gamesapp/models/player.dart';
 import 'package:gamesapp/models/tictactoe_tiles.dart';
-import 'package:gamesapp/widgets/home.dart';
+import 'package:quiver/iterables.dart';
 
 
 class TicTacToe extends StatefulWidget{
   final List<Player> playerList;
+  final EDifficultyType difficultyType;
+  int numberTiles = 9;
+  int crossAxisCount = 3;
+  List<TicTacToeTiles> tilesList;
 
-  TicTacToe(this.playerList);
+  TicTacToe(this.difficultyType, this.playerList);
 
   @override
   State<StatefulWidget> createState() {
+
+    print("DIFFICULTY TIC TAC TOE : ${difficultyType.toString()}");
+    switch(difficultyType){
+      case EDifficultyType.EASY:
+        numberTiles = 9;
+        crossAxisCount = 3;
+        break;
+      case EDifficultyType.MEDIUM:
+        numberTiles = 16;
+        crossAxisCount = 4;
+        break;
+      case EDifficultyType.DIFFICULT:
+        numberTiles = 25;
+        crossAxisCount = 5;
+        break;
+      case EDifficultyType.EXPERT:
+        numberTiles = 36;
+        crossAxisCount = 6;
+        break;
+    }
+    generatePositionWinList();
+
+    tilesList = List<TicTacToeTiles>.generate(numberTiles, (int index) =>  TicTacToeTiles(index, "", Colors.white));
+
     return _TicTacToeState();
+  }
+
+  List<List<int>> generatePositionWinList() {
+
+    print("TileNumberList : ");
+    List<int> tileNumberList = List<int>.generate(numberTiles, (index) => index);
+    tileNumberList.forEach((element) { print(element);});
+
+    var positionWinsHorizontal = partition(tileNumberList, crossAxisCount);
+
+    print("Position win horizontal : ");
+    positionWinsHorizontal.forEach((element) { print(element);});
+
+    var positionWinsVertical = [];
+
+    var list = [];
+    print("TRAITEMENT");
+    for(int i=0; i<crossAxisCount; i++){
+      positionWinsHorizontal.forEach((element) {
+        //print(element);
+        print("Add : ${element[i]}");
+        list.add(element[i]);
+      });
+
+      print("List to add : " + list.toString());
+      positionWinsVertical.add(list);
+      print("Update :" + positionWinsVertical.toString());
+      list.clear();
+    }
+
+    print("Position win vertical : ${positionWinsVertical}");
+
+    print("CROSS AXIS : ${crossAxisCount}");
+
+    List<List<int>> positionWins = [
+      //Horizontal
+      [0,1,2],
+      [3,4,5],
+      [6,7,8],
+
+      //Vertical
+      [0,3,6],
+      [1,4,7],
+      [2,5,8],
+
+      //Diagonal
+      [0,4,8],
+      [2,4,6]
+    ];
+    return positionWins;
   }
 
 }
@@ -22,21 +101,12 @@ class _TicTacToeState extends State<TicTacToe>{
   Color playerColorTour = Colors.blue;
   String textCaseSelected = "";
 
-  List<TicTacToeTiles> tilesList = [
-    TicTacToeTiles(0, "", Colors.white),
-    TicTacToeTiles(1, "", Colors.white),
-    TicTacToeTiles(2, "", Colors.white),
-    TicTacToeTiles(3, "", Colors.white),
-    TicTacToeTiles(4, "", Colors.white),
-    TicTacToeTiles(5, "", Colors.white),
-    TicTacToeTiles(6, "", Colors.white),
-    TicTacToeTiles(7, "", Colors.white),
-    TicTacToeTiles(8, "", Colors.white),
-  ];
+  List<TicTacToeTiles> tilesList;
 
   @override
   void initState() {
     super.initState();
+    tilesList = widget.tilesList;
     playerColorTour = widget.playerList[playerNumberTour].playerColor;
   }
 
@@ -59,7 +129,7 @@ class _TicTacToeState extends State<TicTacToe>{
           Expanded(
             child: GridView.builder(
               itemCount: tilesList.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: widget.crossAxisCount),
                 itemBuilder: (context, i){
                   return InkWell(
                     onTap: (){
@@ -100,21 +170,7 @@ class _TicTacToeState extends State<TicTacToe>{
   }
 
   void checkVictory(int playerNumberTour) {
-    List<List<int>> positionWins = [
-      //Horizontal
-      [0,1,2],
-      [3,4,5],
-      [6,7,8],
-
-      //Vertical
-      [0,3,6],
-      [1,4,7],
-      [2,5,8],
-
-      //Diagonal
-      [0,4,8],
-      [2,4,6]
-    ];
+    List<List<int>> positionWins = [];
 
     List<int> caseListPlayer1 = [];
     List<int> caseListPlayer2 = [];
