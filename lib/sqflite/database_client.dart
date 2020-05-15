@@ -62,17 +62,23 @@ class DatabaseClient {
     return wordList;
   }
 
-  Future<Word> getWordFromDifficulty(int difficulty) async {
+  //Method to get a word list with difficulty and number of word as parameter.
+  Future<List<Word>> getWordListFromDifficulty(int difficulty, int limit) async {
     Database myDatabase = await database;
+    List<Word> wordList = [];
 
-    List<Map> results = await myDatabase.query(HANGED_WORD_TABLE,
+    List<Map> words = await myDatabase.query(HANGED_WORD_TABLE,
         where: 'difficulty = ?',
-        whereArgs: [difficulty]);
+        whereArgs: [difficulty],
+        limit: limit
+    );
 
-    if (results.length > 0) {
-      return new Word.fromMap(results.first);
-    }
-    return null;
+    words.forEach((map) {
+      Word word = Word();
+      word.fromMap(map);
+      wordList.add(word);
+    });
+    return wordList;
   }
 
 }

@@ -3,7 +3,7 @@ import 'package:gamesapp/models/enums/EDifficultyType.dart';
 import 'package:gamesapp/models/enums/EGamesType.dart';
 import 'package:gamesapp/models/player.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
-import 'package:gamesapp/widgets/hanged.dart';
+import 'file:///D:/Documents/AndroidStudioProjects/games_app/lib/widgets/hanged/hanged.dart';
 import 'package:gamesapp/widgets/tictactoe.dart';
 
 class GameConfiguration extends StatefulWidget {
@@ -101,7 +101,7 @@ class _GameConfiguration extends State<GameConfiguration> {
                     case EGameType.HANGED:
                       Navigator.push(context, MaterialPageRoute(
                           builder: (BuildContext buildContext) {
-                            return Hanged(selectedDifficulty, playerList);
+                            return HangedGame(selectedDifficulty, playerList);
                           }));
                       break;
                   //TODO call widget in function of Game

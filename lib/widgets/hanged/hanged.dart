@@ -3,7 +3,9 @@ import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:gamesapp/models/Letter.dart';
 import 'package:gamesapp/models/enums/EDifficultyType.dart';
+import 'package:gamesapp/models/hangedModels/word.dart';
 import 'package:gamesapp/models/player.dart';
+import 'package:gamesapp/sqflite/database_client.dart';
 import 'package:list_french_words/list_french_words.dart';
 
 class Hanged extends StatefulWidget{
@@ -13,7 +15,8 @@ class Hanged extends StatefulWidget{
   Hanged(this.selectedDifficulty, this.playerList);
 
   @override
-  _HangedState createState() {return _HangedState();}
+  _HangedState createState() {
+    return _HangedState();}
 }
 
 class _HangedState extends State<Hanged>{
@@ -22,37 +25,21 @@ class _HangedState extends State<Hanged>{
   List<Letter> letterList;
   int errorNb = 0;
 
-  List<String> wordList = [];
-
-  List<Letter> wordToFindArray = [];
-  List<String> wordToFindStrArray = [];
+  List<Letter> wordToFindLetterList= [];
   String wordToFind;
   int wordToFindIndex = 0;
+  List<Word> wordList;
+
+  String score;
 
   @override
   void initState() {
     super.initState();
     //Generate a random list of words of 10 words
-    print("WORDLIST : ");
-    for(int i=0; i<10; i++){
-      final _random = new Random();
-      var element = list_french_words[_random.nextInt(list_french_words.length)];
-      if(element.length < 12 && element.length > 6){
-        print(element);
-        wordList.add(element.toUpperCase());
-      }
-    }
-
-    wordToFind = removeDiacritics(wordList[wordToFindIndex]);
-    print("Word to find :$wordToFind");
-
-      wordToFindArray = Letter.convertStringListIntoLetterList(wordToFind.split(""));
-      letterList = Letter.generateLetterList();
-      print("WORD TO FIND ARRAY :");
-      wordToFindArray.forEach((element) {
-        print(element.letter);
-        wordToFindStrArray.add(element.letter);
-      });
+    print("INIT STATE");
+    test();
+    print("INIT STATE 2");
+    score = (wordList != null) ? "${widget.playerList[0].score}/${wordList.length}" : "";
   }
 
   @override
@@ -62,20 +49,22 @@ class _HangedState extends State<Hanged>{
       body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            textStyle('${widget.playerList[0].playerName} : ${widget.playerList[0].score}/${wordList.length}', fontSize: 20.0),
+            textStyle('${widget.playerList[0].playerName} : $score' , fontSize: 20.0),
             Padding(padding: EdgeInsets.all(10.0),),
             Image.asset("assets/hanging-rope.png", scale: 8.0,),
             SizedBox(
               height: 30.0,
-             child: ListView.builder(
-                 itemCount: wordToFindArray.length,
+             child: (wordList != null || wordList.isNotEmpty)?
+             ListView.builder(
+                 itemCount: wordToFind.length,
                  scrollDirection: Axis.horizontal,
                  itemBuilder: (context, i){
                    return Container(
-                     width: MediaQuery.of(context).size.width/wordToFindArray.length,
-                     child: Text((wordToFindArray[i].selected == true) ? "${wordToFindArray[i].letter}" : "_", textAlign: TextAlign.center,),
+                     width: MediaQuery.of(context).size.width/wordToFindLetterList.length,
+                     child: Text((wordToFindLetterList[i].selected == true) ? "${wordToFindLetterList[i].letter}" : "_", textAlign: TextAlign.center,),
                    );
-                 }),
+                 }):
+                 Text("WordList vide ou null")
            ),
             Padding(padding: EdgeInsets.all(5.0),),
             Text("Nombre d'erreur : $errorNb"),
@@ -95,11 +84,10 @@ class _HangedState extends State<Hanged>{
                      onTap: (){
                        setState(() {
                          letterList[i].selected=true;
-
                          print(letterList[i].toString());
-                         if(wordToFindStrArray.contains(letterList[i].letter)){
+                         if(containsLetter(letterList[i])){
                            print("CONTIENT");
-                           wordToFindArray.forEach((element) {
+                           wordToFindLetterList.forEach((element) {
                              if(element.letter == letterList[i].letter){
                                element.selected= true;
                              }
@@ -108,6 +96,7 @@ class _HangedState extends State<Hanged>{
                          } else {
                            errorNb ++;
                          }
+                         endGameDialog();
                        });
                      },
                    );
@@ -117,6 +106,27 @@ class _HangedState extends State<Hanged>{
           ],
         ),
     );
+  }
+
+  void test() async{
+    var liste = await DatabaseClient().getWordListFromDifficulty(1, 5);
+    print("VALUE LISTE : $liste");
+
+    setState(() {
+      wordList = liste;
+      print("VALUE WORDLIST : $wordList");
+      print("Wordlist : ${wordList}");
+      wordToFind = wordList[wordToFindIndex].word;
+      wordToFind.split("").forEach((element) {
+        Letter letter = Letter(element, false);
+        if(element == "-") {
+          letter.selected = true;
+        }
+        wordToFindLetterList.add(letter);
+      });
+      print("Word to find :$wordToFind");
+      letterList = Letter.generateLetterList();
+    });
   }
 
   Text textStyle(String data, {color : Colors.orange, fontSize : 15.0}){
@@ -133,7 +143,7 @@ class _HangedState extends State<Hanged>{
 
   bool isWin(){
     int count = 0;
-    wordToFindArray.forEach((element) {
+    wordToFindLetterList.forEach((element) {
       if(element.selected = false){
          count ++;
       }
@@ -163,9 +173,20 @@ class _HangedState extends State<Hanged>{
                 FlatButton(
                 child: Text("Suivant"),
                   onPressed: (){
-                    print("WORDFIND BEFORE : $wordToFind");
-                    wordToFindIndex ++;
-                    print("WORDFIND AFTER : $wordToFind");
+                    setState(() {
+                      wordToFindIndex ++;
+                      wordToFind = wordList[wordToFindIndex].word;
+                      print("NEW WORDFIND : $wordToFind");
+                      wordToFindLetterList = [];
+                      wordToFind.split("").forEach((element) {
+                        Letter letter = Letter(element, false);
+                        if(element == "-") {
+                          letter.selected = true;
+                        }
+                        wordToFindLetterList.add(letter);
+                      });
+                      print("ARRAY NEW WORDTOFIND $wordToFindLetterList");
+                    });
                     //Navigator.pop(buildContext);
                   },
                 ),
@@ -176,6 +197,15 @@ class _HangedState extends State<Hanged>{
     } else {
       return null;
     }
+  }
+
+  bool containsLetter(Letter letterToFind){
+    for(Letter letter in wordToFindLetterList){
+      if(letter == letterToFind){
+        return true;
+      }
+    }
+    return false;
   }
 
   void changeLetterWordStatus(String letterFound){

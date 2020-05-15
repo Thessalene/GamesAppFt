@@ -27,7 +27,7 @@ class Word {
   void fromMap(Map<String, dynamic> map){
     this.id = map["id"];
     this.word = map["word"];
-
+    this.difficulty = map["difficulty"];
   }
 
   /// To send data to database

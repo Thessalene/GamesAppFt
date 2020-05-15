@@ -8,6 +8,17 @@ class Letter{
 
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Letter &&
+              runtimeType == other.runtimeType &&
+              _letter == other._letter;
+
+  @override
+  int get hashCode => _letter.hashCode;
+
+
+  @override
   String toString() {
     return"$_letter : $_selected";
   }
