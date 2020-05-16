@@ -1,4 +1,4 @@
-import 'package:gamesapp/models/hangedModels/word.dart';
+import 'package:gamesapp/models/hangedModels/HangmanWord.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
@@ -39,46 +39,5 @@ class DatabaseClient {
     //Difficulty : 0,1 or 2
   }
 
-  ///Insert
-  Future<int> insertWord(Word word) async {
-    //Check if database exists
-    Database myDatabase = await database;
-    //Nous renvoie un int que l'on assigne à item.id
-    word.id = await myDatabase.insert(HANGED_WORD_TABLE, word.toMap());
-    return word.id;
-  }
-
-  ///Read
-  Future<List<Word>> allWords() async {
-    Database myDatabase = await database;
-    List<Word> wordList = [];
-    //Nous renvoie un int que l'on assigne à word.id
-    List<Map> words = await myDatabase.query(HANGED_WORD_TABLE);
-    words.forEach((map) {
-      Word word = Word();
-      word.fromMap(map);
-      wordList.add(word);
-    });
-    return wordList;
-  }
-
-  //Method to get a word list with difficulty and number of word as parameter.
-  Future<List<Word>> getWordListFromDifficulty(int difficulty, int limit) async {
-    Database myDatabase = await database;
-    List<Word> wordList = [];
-
-    List<Map> words = await myDatabase.query(HANGED_WORD_TABLE,
-        where: 'difficulty = ?',
-        whereArgs: [difficulty],
-        limit: limit
-    );
-
-    words.forEach((map) {
-      Word word = Word();
-      word.fromMap(map);
-      wordList.add(word);
-    });
-    return wordList;
-  }
 
 }

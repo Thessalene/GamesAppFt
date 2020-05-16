@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gamesapp/models/enums/EGamesType.dart';
+import 'package:gamesapp/models/games.dart';
 import 'package:gamesapp/widgets/UI/CustomShapeClipper.dart';
 
 Color firstColor = Color(0xFFF47D15);
@@ -40,6 +42,8 @@ class _HomeScreenTopPart extends State<HomeScreenTopPart>{
                 ),
                 SizedBox(height: 10.0,),
                 Text("My Games App", style: TextStyle(fontSize : 28.0, color: Colors.white),textAlign: TextAlign.center,),
+                SizedBox(height: 50.0,),
+
               ],
             ),
           ),

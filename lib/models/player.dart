@@ -8,5 +8,4 @@ class Player{
 
   Player(this.gameId, this.playerName, this.playerColor, this.score);
 
-
 }
