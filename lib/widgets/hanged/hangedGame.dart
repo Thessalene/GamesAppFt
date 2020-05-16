@@ -1,7 +1,12 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:gamesapp/models/Letter.dart';
 import 'package:gamesapp/models/hangedModels/HangmanWord.dart';
+import 'package:gamesapp/models/player.dart';
+import 'package:gamesapp/sqflite/database_client.dart';
+import 'package:gamesapp/widgets/UI/DialogUtils.dart';
 import 'package:quiver/strings.dart';
+import 'package:easy_dialog/easy_dialog.dart';
 
 class HangedGame extends StatefulWidget{
 
@@ -11,13 +16,15 @@ class HangedGame extends StatefulWidget{
 }
 
 class _HangedGameState extends State<HangedGame>{
+  TextEditingController _pseudoController = new TextEditingController();
 
-  int nbLives = 5;
+  int nbLives = 1;
   bool finishedGame = false;
   int errorNb = 0;
   List<Letter> letterList;
   List<Letter> wordToFindArray = [];
   String wordToFind;
+  int score = 0;
 
   void initGame(){
     finishedGame = false;
@@ -27,13 +34,39 @@ class _HangedGameState extends State<HangedGame>{
     print("The word is : $wordToFind");
 
     wordToFind.split("").forEach((element) {
-      wordToFindArray.add(Letter(element.toUpperCase(), false));
+      Letter letterToAdd = Letter(element.toUpperCase(), false);
+      if(element == "-"){
+        letterToAdd.selected = true;
+      }
+      wordToFindArray.add(letterToAdd);
     });
     print(wordToFindArray);
-    print(wordToFindArray.length);
 
     //Init alphabet list letter
     letterList = Letter.generateLetterList();
+  }
+
+  void nextGame(){
+    setState(() {
+      finishedGame = false;
+      errorNb = 0;
+
+      wordToFind = HangmanWord.getWord().trim();
+      print("The next word is : $wordToFind");
+
+      wordToFindArray =[];
+      wordToFind.split("").forEach((element) {
+        Letter letterToAdd = Letter(element.toUpperCase(), false);
+        if(element == "-"){
+          letterToAdd.selected = true;
+        }
+        wordToFindArray.add(letterToAdd);
+      });
+      print(wordToFindArray);
+
+      //Init alphabet list letter
+      letterList = Letter.generateLetterList();
+    });
   }
 
   @override
@@ -45,8 +78,10 @@ class _HangedGameState extends State<HangedGame>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding: true,
       backgroundColor: Color(0xFF8F3985),
       body: SafeArea(
+
         child: Center(
           child: Column(
             children: <Widget>[
@@ -65,7 +100,7 @@ class _HangedGameState extends State<HangedGame>{
                         ),
                       ],
                     ),
-                    Text("Score : 0/5", style: TextStyle(color: Colors.white),),
+                    Text("Score : $score", style: TextStyle(color: Colors.white),),
                     Text("Errors : $errorNb", style: TextStyle(color: Colors.white),),
                     Icon(Icons.lightbulb_outline, color: Colors.white,),
                   ],
@@ -88,7 +123,7 @@ class _HangedGameState extends State<HangedGame>{
                 ),
               ),
               SizedBox(
-                height : MediaQuery.of(context).size.height/12,
+                height : MediaQuery.of(context).size.height/10,
                 child: (wordToFindArray != null || wordToFindArray.isNotEmpty)?
               Center(
                 child: ListView.builder(
@@ -134,12 +169,14 @@ class _HangedGameState extends State<HangedGame>{
                             ),
                           ),
                           onTap: (){
-                            setState(() {
-                              print("On tap on ${letter.letter}");
-                              letterList[i].selected = true;
-                              checkLetter(letter.letter);
-                              checkEndGame();
-                            });
+                            if(!letter.selected){
+                              setState(() {
+                                print("On tap on ${letter.letter}");
+                                letterList[i].selected = true;
+                                checkLetter(letter.letter);
+                                checkEndGame();
+                              });
+                            }
                           },
                         );
                       }
@@ -173,14 +210,15 @@ class _HangedGameState extends State<HangedGame>{
     if(errorNb == 10){
       //Finish and decrease lives
       nbLives--;
-      //endGame(false);
+      endGame(false);
       return;
     }
     var listOfLetterRemained = wordToFindArray.where((letter) => letter.selected==false).toList();
     //If there is no letter to find
     if(listOfLetterRemained.isEmpty){
       print("C'est gagné !");
-      //ednGame(true);
+      score = score+ wordToFindArray.length * 10;
+      endGame(true);
     } else {
       print("Essaie encore !");
     }
@@ -188,11 +226,99 @@ class _HangedGameState extends State<HangedGame>{
 
   void endGame(bool isWin){
     if(isWin){
-
+      infoDialog(context,"Bien joué !","Faites péter les scores !", DialogType.SUCCES);
     } else {
-
+      infoDialog(context,"Echec !","Il vous reste $nbLives vies.", DialogType.ERROR);
     }
   }
 
+  Future<dynamic> infoDialog(BuildContext context, String title, String description, DialogType type){
+    return AwesomeDialog(context: context,
+        dialogType: type,
+        animType: AnimType.BOTTOMSLIDE,
+        tittle: title,
+        desc: description,
+        btnCancel: null,
+        btnOkText: (nbLives > 0) ?"Suivant" : "Terminé",
+        btnOkOnPress: () {
+          print("Click on ok");
+          if(nbLives > 0){
+            nextGame();
+          } else {
+            //Ask pseudo to save score
+            pseudoDialog();
+          }
+        })
+        .show();
+  }
+
+  Future<dynamic> pseudoDialog(){
+    return EasyDialog(
+      descriptionPadding: EdgeInsets.all(10.0),
+      height: MediaQuery.of(context).size.height/2,
+      title: Text("Votre score : $score.", style: TextStyle(color: Colors.purple[700], fontWeight: FontWeight.bold, fontSize: 20.0),),
+    contentList: [
+        Container(
+          margin: EdgeInsets.all(10.0),
+          child: Theme(
+            data :Theme.of(context).copyWith(accentColor: Colors.purple, primaryColor: Colors.purple),
+            child: TextField(
+              controller: _pseudoController,
+              autofocus: true,
+              textAlign: TextAlign.center,
+              cursorColor: Colors.purple,
+              maxLength: 12,
+              decoration: InputDecoration(
+                focusColor: Colors.purple,
+                icon: Icon(Icons.person_add, color: Colors.purple,),
+                labelText: "Entrez votre pseudo",
+                labelStyle: TextStyle(
+                  color: Colors.purple,
+                  decorationColor: Colors.purple,
+                ),
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            new FlatButton(
+              padding: const EdgeInsets.only(top: 8.0),
+              highlightColor: Colors.purple[400],
+              child: new Text(
+                "Valider",
+                style: TextStyle(color: Colors.purple),
+                textScaleFactor: 1.2,
+              ),
+              onPressed: () {
+                print("Go to score page");
+                Player playerToAdd = Player();
+                playerToAdd.playerName = _pseudoController.text;
+                playerToAdd.score = score;
+                playerToAdd.gameId = 1;
+                DatabaseClient().addItemToDatabase(playerToAdd).then(
+                        (value) => recupererDonnees());
+              },
+            ),
+          ],
+        )
+      ],
+      closeButton: false,
+    ).show(context);
+  }
+
+  void recupererDonnees(){
+    print("Récupérer les données : ");
+    DatabaseClient().allItems().then((players){
+      setState(() {
+        print(players.toString());
+      });
+    });
+  }
 
 }

@@ -52,10 +52,10 @@ class _GameListState extends State<GameList> {
                       redirection = HangedHomePage();
                       break;
                     case EGameType.BATTLESHIP:
-                      redirection = GameConfiguration(gameList[i].gameType);
+                      redirection = null;
                       break;
                     case EGameType.HANGED:
-                      redirection = GameConfiguration(gameList[i].gameType);
+                      redirection = null;
                       break;
                   }
                   return redirection;

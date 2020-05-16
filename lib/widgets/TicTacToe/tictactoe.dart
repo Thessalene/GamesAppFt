@@ -107,7 +107,7 @@ class _TicTacToeState extends State<TicTacToe>{
   void initState() {
     super.initState();
     tilesList = widget.tilesList;
-    playerColorTour = widget.playerList[playerNumberTour].playerColor;
+    //playerColorTour = widget.playerList[playerNumberTour].playerColor;
   }
 
   @override
@@ -120,9 +120,9 @@ class _TicTacToeState extends State<TicTacToe>{
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Text("${widget.playerList[0].playerName}", style: TextStyle(fontSize: 25.0, color: widget.playerList[0].playerColor),),
-              Text(" VS ", style: TextStyle(fontSize: 30.0, fontStyle: FontStyle.italic, color: Colors.grey[800]),),
-              Text("${widget.playerList[1].playerName}", style: TextStyle(fontSize: 25.0, color: widget.playerList[1].playerColor),),
+              Text("${widget.playerList[0].playerName}", style: TextStyle(fontSize: 25.0, )),
+              Text(" VS ", style: TextStyle(fontSize: 30.0, fontStyle: FontStyle.italic, )),
+              Text("${widget.playerList[1].playerName}", style: TextStyle(fontSize: 25.0)),
               Container(height: 50.0,)
             ],
           ),
@@ -136,7 +136,7 @@ class _TicTacToeState extends State<TicTacToe>{
                       setState(() {
                         if(tilesList[i].text == ""){
                           tilesList[i].text =  (playerNumberTour == 0) ? "O" : "X";
-                          tilesList[i].color =  widget.playerList[playerNumberTour].playerColor;
+                          //tilesList[i].color =  widget.playerList[playerNumberTour].playerColor;
 
                           checkVictory(playerNumberTour);
                           changePlayer();
