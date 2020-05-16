@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gamesapp/components/ActionButton.dart';
 import 'package:gamesapp/models/hangedModels/HangmanWord.dart';
+import 'package:gamesapp/widgets/hanged/hangedmanHighScores.dart';
 import 'hangedGame.dart';
 
 class HangedHomePage extends StatefulWidget{
@@ -11,6 +12,7 @@ class HangedHomePage extends StatefulWidget{
 }
 
 class _HangedHomePage extends State<HangedHomePage>{
+
 
   @override
   void initState() {
@@ -90,7 +92,7 @@ class _HangedHomePage extends State<HangedHomePage>{
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => null,
+                                builder: (context) => HangedmanHighScores(),
                               ),
                             );
                           },

@@ -1,16 +1,15 @@
 
-class Player{
+class Score{
   int playerId;
   String playerName;
   int score = 0;
   int gameId;
 
-  Player();
-
+  Score();
 
   @override
   String toString() {
-    return 'Player{playerId: $playerId, playerName: $playerName, score: $score, gameId: $gameId}';
+    return 'Score{playerId: $playerId, playerName: $playerName, score: $score, gameId: $gameId}';
   }
 
   //Player(this.playerId, this.playerName,  this.gameId, this.score);

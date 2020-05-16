@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gamesapp/models/enums/EDifficultyType.dart';
-import 'package:gamesapp/models/player.dart';
+import 'package:gamesapp/models/score.dart';
 import 'package:gamesapp/models/tictactoe_tiles.dart';
 import 'package:quiver/iterables.dart';
 
 
 class TicTacToe extends StatefulWidget{
-  final List<Player> playerList;
+  final List<Score> playerList;
   final EDifficultyType difficultyType;
   int numberTiles = 9;
   int crossAxisCount = 3;

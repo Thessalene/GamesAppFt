@@ -1,5 +1,5 @@
 import 'package:gamesapp/models/hangedModels/HangmanWord.dart';
-import 'package:gamesapp/models/player.dart';
+import 'package:gamesapp/models/score.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
@@ -59,32 +59,30 @@ class DatabaseClient {
     });
   }
 
-
 /* Data writing */
 
-  Future<Player> addItemToDatabase(Player player) async{
+  Future<Score> addItemToDatabase(Score score) async{
     //Check if database exists
     Database myDatabase = await database;
-    //Nous renvoie un int que l'on assigne à item.id
-    player.playerId = await myDatabase.insert("$SCORE_TABLE", player.toMap());
-    return player;
+    //Nous renvoie un int que l'on assigne à score.playerId
+    score.playerId = await myDatabase.insert("$SCORE_TABLE", score.toMap());
+    return score;
   }
 
-
 /* Data reading */
-  Future<List<Player>> allItems() async{
+  Future<List<Score>> allItems() async{
     //Check if database exists
     Database myDatabase = await database;
-    List<Player> players = [];
+    List<Score> scores = [];
 
-    List<Map<String, dynamic>> result = await myDatabase.rawQuery("SELECT * FROM $SCORE_TABLE");
+    List<Map<String, dynamic>> result = await myDatabase.rawQuery("SELECT * FROM $SCORE_TABLE ORDER BY score DESC");
 
     result.forEach((map) {
-      Player player = Player();
-      player.fromMap(map);
-      players.add(player);
+      Score score = Score();
+      score.fromMap(map);
+      scores.add(score);
     });
-    return players;
+    return scores;
   }
 
 

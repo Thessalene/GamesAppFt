@@ -1,12 +1,16 @@
+import 'dart:math';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:gamesapp/models/Letter.dart';
 import 'package:gamesapp/models/hangedModels/HangmanWord.dart';
-import 'package:gamesapp/models/player.dart';
+import 'package:gamesapp/models/score.dart';
 import 'package:gamesapp/sqflite/database_client.dart';
 import 'package:gamesapp/widgets/UI/DialogUtils.dart';
 import 'package:quiver/strings.dart';
 import 'package:easy_dialog/easy_dialog.dart';
+
+import 'hangedmanHighScores.dart';
 
 class HangedGame extends StatefulWidget{
 
@@ -17,6 +21,8 @@ class HangedGame extends StatefulWidget{
 
 class _HangedGameState extends State<HangedGame>{
   TextEditingController _pseudoController = new TextEditingController();
+
+  int clues = 3;
 
   int nbLives = 1;
   bool finishedGame = false;
@@ -40,7 +46,7 @@ class _HangedGameState extends State<HangedGame>{
       }
       wordToFindArray.add(letterToAdd);
     });
-    print(wordToFindArray);
+
 
     //Init alphabet list letter
     letterList = Letter.generateLetterList();
@@ -62,7 +68,6 @@ class _HangedGameState extends State<HangedGame>{
         }
         wordToFindArray.add(letterToAdd);
       });
-      print(wordToFindArray);
 
       //Init alphabet list letter
       letterList = Letter.generateLetterList();
@@ -101,8 +106,26 @@ class _HangedGameState extends State<HangedGame>{
                       ],
                     ),
                     Text("Score : $score", style: TextStyle(color: Colors.white),),
-                    Text("Errors : $errorNb", style: TextStyle(color: Colors.white),),
-                    Icon(Icons.lightbulb_outline, color: Colors.white,),
+                    Text("Erreurs : $errorNb", style: TextStyle(color: Colors.white),),
+                    Stack(
+                      children: [
+                        IconButton(
+                          icon : Icon(Icons.lightbulb_outline, size: 30.0 ,color: Colors.white),
+                          onPressed: (){
+                            setState(() {
+                              if(clues > 0){
+                                clues--;
+                                displayRandomLetter();
+                              }
+                            });
+                          },
+                        ),                        Padding(
+                          padding: EdgeInsets.fromLTRB(35.0, 8.0, 0.0, 0.0),
+                          child: Text("$clues", style: TextStyle(color : Colors.white, fontWeight: FontWeight.bold,),),
+                        ),
+                      ],
+                    ),
+
                   ],
                 ),
               ),
@@ -131,13 +154,12 @@ class _HangedGameState extends State<HangedGame>{
                     shrinkWrap: true,
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context, i){
-                      //print("list : ${wordToFindArray[i]}");
                       return Center(
                         child: Container(
                               child : Text(
                                 (wordToFindArray[i].selected == true) ? " ${wordToFindArray[i].letter} " : "  _  ",
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18.0),
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16.0),
 
                               ),
                           ),
@@ -171,7 +193,6 @@ class _HangedGameState extends State<HangedGame>{
                           onTap: (){
                             if(!letter.selected){
                               setState(() {
-                                print("On tap on ${letter.letter}");
                                 letterList[i].selected = true;
                                 checkLetter(letter.letter);
                                 checkEndGame();
@@ -195,7 +216,6 @@ class _HangedGameState extends State<HangedGame>{
     bool foundALetter = false;
     wordToFindArray.forEach((element) {
       if(equalsIgnoreCase(element.letter, letter)){
-        print("CONTIENT");
         element.selected = true;
         foundALetter = true;
       }
@@ -216,11 +236,8 @@ class _HangedGameState extends State<HangedGame>{
     var listOfLetterRemained = wordToFindArray.where((letter) => letter.selected==false).toList();
     //If there is no letter to find
     if(listOfLetterRemained.isEmpty){
-      print("C'est gagné !");
       score = score+ wordToFindArray.length * 10;
       endGame(true);
-    } else {
-      print("Essaie encore !");
     }
   }
 
@@ -241,7 +258,6 @@ class _HangedGameState extends State<HangedGame>{
         btnCancel: null,
         btnOkText: (nbLives > 0) ?"Suivant" : "Terminé",
         btnOkOnPress: () {
-          print("Click on ok");
           if(nbLives > 0){
             nextGame();
           } else {
@@ -296,13 +312,14 @@ class _HangedGameState extends State<HangedGame>{
                 textScaleFactor: 1.2,
               ),
               onPressed: () {
-                print("Go to score page");
-                Player playerToAdd = Player();
-                playerToAdd.playerName = _pseudoController.text;
-                playerToAdd.score = score;
-                playerToAdd.gameId = 1;
-                DatabaseClient().addItemToDatabase(playerToAdd).then(
-                        (value) => recupererDonnees());
+                Score scoreToAdd = Score();
+                scoreToAdd.playerName = _pseudoController.text;
+                scoreToAdd.score = score;
+                scoreToAdd.gameId = 1;
+                DatabaseClient().addItemToDatabase(scoreToAdd).then(
+                        (value) => Navigator.push(context, MaterialPageRoute(
+                          builder: (context) => HangedmanHighScores()
+                        )));
               },
             ),
           ],
@@ -312,12 +329,13 @@ class _HangedGameState extends State<HangedGame>{
     ).show(context);
   }
 
-  void recupererDonnees(){
-    print("Récupérer les données : ");
-    DatabaseClient().allItems().then((players){
-      setState(() {
-        print(players.toString());
-      });
+  void displayRandomLetter() {
+    var listOfLetterRemained = wordToFindArray.where((letter) => letter.selected==false).toSet().toList();
+    var _random = Random();
+    setState(() {
+      var randomLetter = listOfLetterRemained[_random.nextInt(listOfLetterRemained.length)];
+      print("Random letter ${randomLetter}");
+      checkLetter(randomLetter.letter);
     });
   }
 
