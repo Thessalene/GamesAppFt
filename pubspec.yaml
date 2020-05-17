@@ -23,7 +23,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  flutter_material_color_picker: ^1.0.3
+  quiver: ^2.1.3
+  diacritic: ^0.1.1
+  sqflite:  ^0.11.0+1
+  path_provider: ^1.6.8
+  awesome_dialog: ^0.1.4
+  easy_dialog: ^1.0.5
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -45,8 +51,13 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - res/hangman_words
+    - assets/HangedMan_white_0.png
+    - assets/battleships.png
+    - assets/hanging-rope.png
+    - assets/tic-tac-toe.png
+    - assets/handgman.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
