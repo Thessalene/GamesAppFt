@@ -1,4 +1,4 @@
-# gamesapp
+# GamesApp
 
 A new Flutter application.
 
